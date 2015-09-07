@@ -1,11 +1,12 @@
 package io.wadsten.wlanhistory;
 
 import android.os.Bundle;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.widget.TextView;
 
 public class MainActivity extends AppCompatActivity implements HistoryFragment.OnFragmentInteractionListener {
 
@@ -21,14 +22,23 @@ public class MainActivity extends AppCompatActivity implements HistoryFragment.O
         }
     }
 
+    private void updateHistoryView() {
+        NetworkStateHistory history = LogHelper.getHistory(getApplicationContext());
+        HistoryFragment f = (HistoryFragment) getSupportFragmentManager().findFragmentByTag("history");
+
+        HistoryAdapter adapter = new HistoryAdapter(this, R.layout.history_item);
+        if (history != null) adapter.swapHistory(history);
+
+        f.setListAdapter(adapter);
+
+        f.setEmptyText("No history");
+    }
+
     @Override
     protected void onResume() {
         super.onResume();
 
-        NetworkStateHistory history = LogHelper.getHistory(getApplicationContext());
-        Log.i("MainActivity", "newest: " + (history == null ? "null" : history.history.get(history.history.size() - 1).toString()));
-
-        HistoryFragment f = (HistoryFragment) getSupportFragmentManager().findFragmentByTag("history");
+        updateHistoryView();
     }
 
     @Override
@@ -46,10 +56,12 @@ public class MainActivity extends AppCompatActivity implements HistoryFragment.O
         int id = item.getItemId();
 
         //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
+        if (id == R.id.action_refresh) {
+            updateHistoryView();
             return true;
         } else if (id == R.id.action_clear) {
             LogHelper.clearHistory(getApplicationContext());
+            updateHistoryView();
             return true;
         }
 
@@ -57,8 +69,18 @@ public class MainActivity extends AppCompatActivity implements HistoryFragment.O
     }
 
     @Override
-    public void onFragmentInteraction(String id) {
+    public void onFragmentInteraction(NetworkState state) {
+//        Toast.makeText(getApplicationContext(), state.toString(), Toast.LENGTH_SHORT).show();
 
+        FragmentManager fm = getSupportFragmentManager();
+        FragmentTransaction ft = fm.beginTransaction();
 
+        Fragment prev = fm.findFragmentByTag("dialog");
+        if (prev != null) {
+            ft.remove(prev);
+        }
+        ft.addToBackStack(null);
+
+        new HistoryDialogFragment().setState(state).show(ft, "dialog");
     }
 }

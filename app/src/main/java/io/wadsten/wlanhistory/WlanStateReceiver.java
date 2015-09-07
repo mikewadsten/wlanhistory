@@ -8,10 +8,6 @@ import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
 import android.util.Log;
 
-import java.util.Queue;
-import java.util.concurrent.ConcurrentLinkedDeque;
-import java.util.concurrent.ConcurrentLinkedQueue;
-
 public class WlanStateReceiver extends BroadcastReceiver {
     private static final String TAG = "WlanStateReceiver";
 

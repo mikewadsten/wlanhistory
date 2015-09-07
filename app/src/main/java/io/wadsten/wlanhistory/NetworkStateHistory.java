@@ -17,6 +17,14 @@ public class NetworkStateHistory {
     }
 
     public void add(NetworkState state) {
-        history.add(state);
+        history.add(0, state);
+    }
+
+    public int size() {
+        return history.size();
+    }
+
+    public int indexOf(NetworkState item) {
+        return history.indexOf(item);
     }
 }
